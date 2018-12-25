@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import './App.css';
-import * as artifact from './contracts/RedPacket'
+import * as artifact from './contracts/Predict'
 
 
 class App extends Component {
@@ -34,113 +34,215 @@ class App extends Component {
         console.log(this.contract);
     }
 
-    //获取未领取的红包列表
+
+    //检查是否有用户数据
+    //true --- 有数据 ，调用 predict
+    //false -- 没有数据，调用 predictFirst
+    checkUser = async () => {
+        let result_0 = await this.contract.checkUser().call()
+        console.log(result_0)
+        this.setState({checkUser:JSON.parse(result_0)})
+    };
 
     //我的记录
     getUser = async () => {
         let result_0 = await this.contract.getUser().call()
         console.log(result_0)
-        let usercreate = result_0[1].length
-        let listcreate = []
-        for(let i = 0; i < usercreate; i++) {
-            listcreate.push(JSON.parse(result_0[1][i]))
+        let love = result_0[5].length
+        let listlove = []
+        for(let i = 0; i < love; i++) {
+            listlove.push(JSON.parse(result_0[5][i]))
         }
-        let userget = result_0[2].length
-        let listget = []
-        for(let i = 0; i < userget; i++) {
-            listget.push(JSON.parse(result_0[2][i]))
+        let career = result_0[6].length
+        let listcareer = []
+        for(let i = 0; i < career; i++) {
+            listcareer.push(JSON.parse(result_0[6][i]))
         }
-        this.setState({getUserKey:JSON.parse(result_0[0])})
-        this.setState({getUserCreate:listcreate.join(",")})
-        this.setState({getUserGet:listget.join(",")})
+        let money = result_0[7].length
+        let listmoney = []
+        for(let i = 0; i < money; i++) {
+            listmoney.push(JSON.parse(result_0[7][i]))
+        }
+        this.setState({getUserkey:JSON.parse(result_0[0])})
+        this.setState({getUsername:result_0[1]})
+        this.setState({getUsersex:JSON.parse(result_0[2])})
+        this.setState({getUserbirthday:JSON.parse(result_0[3])})
+        this.setState({getUserluckynumber:JSON.parse(result_0[4])})
+        this.setState({getUserlove:listlove.join(",")})
+        this.setState({getUsercareer:listcareer.join(",")})
+        this.setState({getUsermoney:listmoney.join(",")})
     };
 
 
-    //创建红包
-    createPacket = async () => {
-        let tron = 10*1000000; 
-        let result_0 = await this.contract.createPacket(10, 2, "true","true","tron","hello").send({
+    //运势
+    predict = async () => {
+        //监听
+        console.log("---------------------")
+        let contractInstance = await tronWeb.contract().at("41dbeba2b4d7e5ce37f84e6b949681316c8259a159");
+        console.log(contractInstance)
+        contractInstance["predictSuccess"]().watch(function(err, res) {
+            console.log("error " + err);
+            console.log('eventResult:',res);
+            console.log("---------------------")
+            console.log('Money:',res["result"]["score"]);
+            //this.setState({predict:res["result"]["score"]})
+        });
+        console.log("---------------------")
+        //调用 合约中得predict
+        let typepredict = 1 ///1是love，2是career，3是money
+        let result_0 = await this.contract.predict(typepredict).send({
             feeLimit:100000000,
-            callValue:tron,
+            callValue:0,
             shouldPollResponse:true
         })
         console.log(result_0)
-        this.setState({createPacket:JSON.stringify(result_0)})
+        
     };
 
-    //抢红包
-    getPacket = async () => {
-        let result_0 = await this.contract.getPacket(2,"tron").send()
+    //第一次算运势
+    predictFirst = async () => {
+        //监听
+        console.log("---------------------")
+        let contractInstance = await tronWeb.contract().at("41dbeba2b4d7e5ce37f84e6b949681316c8259a159");
+        console.log(contractInstance)
+        contractInstance["predictSuccess"]().watch(function(err, res) {
+            console.log("error " + err);
+            console.log('eventResult:',res);
+            console.log("---------------------")
+            console.log('Money:',res["result"]["score"]);
+            this.setState({predictFirst:res["result"]["score"]})
+        });
+        console.log("---------------------")
+        //调用 合约中得predictFirst
+        //string _name, uint256 _sex, uint256 _birthday, uint256 _luckynumber, uint256 _type
+        let name = "hahaha"
+        let sex = 1
+        let birthday = 19970101
+        let luckynumber = 6
+        let typepredict = 2 ///1是love，2是career，3是money
+        let result_0 = await this.contract.predictFirst(name, sex, birthday, luckynumber,typepredict).send({
+            feeLimit:100000000,
+            callValue:0,
+            shouldPollResponse:true
+        })
         console.log(result_0)
-        this.setState({getPacket:JSON.stringify(result_0)})
     };
 
-    //获取红包信息
+    //为他人算运势
+    predictForothers = async () => {
+        //监听
+        console.log("---------------------")
+        let contractInstance = await tronWeb.contract().at("41dbeba2b4d7e5ce37f84e6b949681316c8259a159");
+        console.log(contractInstance)
+        contractInstance["predictSuccess"]().watch(function(err, res) {
+            console.log("error " + err);
+            console.log('eventResult:',res);
+            console.log("---------------------")
+            console.log('Money:',res["result"]["score"]);
+            this.setState({predictForothers:res["result"]["score"]})
+        });
+        console.log("---------------------")
+        //调用 合约中得predict
+        //string _name, uint256 _sex, uint256 _birthday, uint256 _luckynumber, uint256 _type
+        let name = "hahaha"
+        let sex = 1
+        let birthday = 19970101
+        let luckynumber = 6
+        let typepredict = 2 ///1是love，2是career，3是money
+        let result_0 = await this.contract.predictForothers(name, sex, birthday, luckynumber,typepredict).send({
+            feeLimit:100000000,
+            callValue:0,
+            shouldPollResponse:true
+        })
+        console.log(result_0)
+        
+    };
 
-    getPacketstruct = async () => {
+    //捐赠给开发者
+    donate = async () => {
+        //监听
+        console.log("---------------------")
+        let contractInstance = await tronWeb.contract().at("41dbeba2b4d7e5ce37f84e6b949681316c8259a159");
+        console.log(contractInstance)
+        contractInstance["DonateSuccess"]().watch(function(err, res) {
+            console.log("error " + err);
+            console.log('eventResult:',res);
+            console.log("---------------------")
+            console.log('Money:',res["result"]["money"]);
+        });
+        console.log("---------------------")
         let tron = 1000000
-        let result_0 = await this.contract.getPacketstruct(1).call()
+        let money = 5
+        let result_0 = await this.contract.donate(money).send({
+            feeLimit:100000000,
+            callValue:money * tron,
+            shouldPollResponse:true
+        })
         console.log(result_0)
-        this.setState({getPacketstructAddress:result_0[1]})
-        this.setState({getPacketstructTime:JSON.parse(result_0[2])})
-        this.setState({getPacketstructMoney:JSON.parse(result_0[3]) / tron})
-        this.setState({getPacketstructAllcount:JSON.parse(result_0[4])})
-        this.setState({getPacketstructCount:JSON.parse(result_0[5])})
-        this.setState({getPacketstructAve:String(result_0[6])})
-        this.setState({getPacketstructCrypto:String(result_0[7])})
-        this.setState({getPacketstructFinish:String(result_0[8])})
-        this.setState({getPacketstructRecords:JSON.parse(result_0[9])})
-        this.setState({getPacketstructBalance:JSON.parse(result_0[10]) / tron})
-        this.setState({getPacketstructContent:result_0[11]})
+        this.setState({donate:res["result"]["money"]})
     };
 
-    //获取记录信息
+    //转运
+    help = async () => {
+        //监听
+        console.log("---------------------")
+        let contractInstance = await tronWeb.contract().at("41dbeba2b4d7e5ce37f84e6b949681316c8259a159");
+        console.log(contractInstance)
+        contractInstance["HelpSuccess"]().watch(function(err, res) {
+            console.log("error " + err);
+            console.log('eventResult:',res);
+            console.log("---------------------")
+            console.log('Money:',res["result"]["money"]);
+        });
+        console.log("---------------------")
+        let result_0 = await this.contract.help().send({
+            feeLimit:100000000,
+            callValue:5000000,
+            shouldPollResponse:true
+        })
+        console.log(result_0)
+        this.setState({help:res["result"]["money"]})
+    };
+
+    //根据typeid和id获取记录
     getRecord = async () => {
-        let tron = 1000000
-        let result_0 = await this.contract.getRecord(1).call()
+        let result_0 = await this.contract.getRecord(2,1).call()
         console.log(result_0)
-        this.setState({getRecordId:JSON.parse(result_0[0])})
-        this.setState({getRecordOwner:result_0[1]})
-        this.setState({getRecordTime:JSON.parse(result_0[2])})
-        this.setState({getRecordMoney:(JSON.parse(result_0[3]) / tron)})
-    };
+        this.setState({getRecordid:JSON.pares(result_0[0])})
+        this.setState({getRecordscore:JSON.pares(result_0[1])})
+        this.setState({getRecordowner:JSON.pares(result_0[2])})
+    }
 
-    //获取所有红包key
-    getPacketkey = async () => {
-        let result_0 = await this.contract.getPacketkey().call()
+    //爱情运势记录，typeid = 1
+    getLove = async () => {
+        let result_0 = await this.contract.getLovekey().call()
         console.log(result_0)
-        this.setState({getPacketkey:JSON.parse(result_0)})
-    };
-
-
-    //获取已抢光的红包key
-    getFinishkey = async () => {
-        let result_0 = await this.contract.getFinishkey().call()
-        console.log(result_0)
-        let finishpacket = [];
-        for(let i = 1; i< result_0;i++){
-            let packet = JSON.parse(await this.contract.getFinishpacket(i).call())
-            finishpacket.push(packet)
+        for(let i = 1; i<result_0; i++) {
+            console.log(await this.contract.getRecord(1,i).call())
         }
-        this.setState({getFinishkey:JSON.parse(result_0)})
-    };
+        this.setState({getLove:result_0[0]})
+    }
 
-    //获取有效的红包key
-    getAllpacket = async () => {
-        let result_0 = JSON.parse(await this.contract.getPacketkey().call())
+    //事业运势记录，typeid = 2
+    getCareer = async () => {
+        let result_0 = await this.contract.getCareerkey().call()
         console.log(result_0)
-        let packet = [];
-        for(let i = 1; i< result_0;i++){
-            packet.push(i);
+        for(let i = 1; i<result_0; i++) {
+            console.log(await this.contract.getRecord(2,i).call())
         }
-        let result_1 = JSON.parse(await this.contract.getFinishkey().call())
-        console.log(result_1)
-        for(let i = 1; i< result_1;i++){
-            let j = JSON.parse(await this.contract.getFinishpacket(i).call())
-            packet[j-1] = -1;
+        this.setState({getCareer:JSON.pares(result_0)})
+    }
+
+    //财富运势记录，typeid = 3
+    getMoney = async () => {
+        let result_0 = await this.contract.getMoneykey().call()
+        console.log(result_0)
+        for(let i = 1; i<result_0; i++) {
+            console.log(await this.contract.getRecord(3,i).call())
         }
-        this.setState({getAllpacket:packet.join(",")})
-    };
+        this.setState({getMoney:JSON.pares(result_0)})
+    }
+
 
 
     render() {
@@ -153,71 +255,88 @@ class App extends Component {
                 </div>
 
                 <div>
-                    <p>getPacketkey</p>
-                    <p>{this.state.getPacketkey}</p>
-                    <button onClick={this.getPacketkey}>getPacketkey</button>
-                    <hr></hr>
-                </div>
-
-                <div>
-                    <p>getFinishkey</p>
-                    <p>{this.state.getFinishkey}</p>
-                    <button onClick={this.getFinishkey}>getFinishkey</button>
-                    <hr></hr>
-                </div>
-
-                <div>
-                    <p>getAllpacket</p>
-                    <p>{this.state.getAllpacket}</p>
-                    <button onClick={this.getAllpacket}>getAllpacket</button>
+                    <p>checkUser</p>
+                    <p>{this.state.checkUser}</p>
+                    <button onClick={this.checkUser}>checkUser</button>
                     <hr></hr>
                 </div>
 
                 <div>
                     <p>getUser</p>
-                    <p>{this.state.getUserKey}</p>
-                    <p>已发的红包：{this.state.getUserCreate}</p>
-                    <p>已领取的红包：{this.state.getUserGet}</p>
+                    <p>id:{this.state.getUserkey}</p>
+                    <p>name:{this.state.getUsername}</p>
+                    <p>sex:{this.state.getUsersex}</p>
+                    <p>birthday:{this.state.getUserbirthday}</p>
+                    <p>luckynumber:{this.state.getUserluckynumber}</p>
+                    <p>love:{this.state.getUserlove}</p>
+                    <p>career:{this.state.getUsercareer}</p>
+                    <p>money:{this.state.getUsermoney}</p>
                     <button onClick={this.getUser}>getUser</button>
                     <hr></hr>
                 </div>
 
                 <div>
-                    <p>createPacket</p>
-                    <p>{this.state.createPacket}</p>
-                    <button onClick={this.createPacket}>createPacket</button>
+                    <p>predict</p>
+                    <p>分数：{this.state.predict}</p>
+                    <button onClick={this.predict}>predict</button>
                     <hr></hr>
                 </div>
 
                 <div>
-                    <p>getPacket</p>
-                    <p>{this.state.getPacket}</p>
-                    <button onClick={this.getPacket}>getPacket</button>
+                    <p>predictFirst</p>
+                    <p>分数：{this.state.predictFirst}</p>
+                    <button onClick={this.predictFirst}>predictFirst</button>
                     <hr></hr>
                 </div>
 
                 <div>
-                    <p>getPacketstruct</p>
-                    <p>{this.state.getPacketstructAddress} 发送的红包</p>
-                    <p>红包祝福：{this.state.getPacketstructContent}</p>
-                    <p>创建时间 {this.state.getPacketstructTime}</p>
-                    <p>剩余金额 {this.state.getPacketstructBalance} / 总金额 {this.state.getPacketstructMoney}</p>
-                    <p>已经领取的份数 {this.state.getPacketstructCount} / 总份数{this.state.getPacketstructAllcount}</p>
-                    <p>普通红包/手气红包{this.state.getPacketstructAve}</p>
-                    <p>是否需要口令{this.state.getPacketstructCrypto}</p>
-                    <p>是否抢光{this.state.getPacketstructFinish}</p>
-                    <p>红包记录{this.state.getPacketstructRecords}</p>
-                    <button onClick={this.getPacketstruct}>getPacketstruct</button>
+                    <p>predictForothers</p>
+                    <p>分数：{this.state.predictFirst}</p>
+                    <button onClick={this.predictFirst}>predictFirst</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>donate</p>
+                    <p>捐赠金额{this.state.donate}</p>
+                    <button onClick={this.donate}>donate</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>help</p>
+                    <p>转运支付的金额{this.state.help}</p>
+                    <button onClick={this.help}>help</button>
                     <hr></hr>
                 </div>
 
                 <div>
                     <p>getRecord</p>
-                    <p>第{this.state.getRecordId}个领取</p>
-                    <p>领取者：{this.state.getRecordOwner}</p>
-                    <p>领取时间：{this.state.getRecordTime}</p>
-                    <p>领取金额：{this.state.getRecordMoney}</p>
+                    <p>ID：{this.state.getRecordid}</p>
+                    <p>Owner：{this.state.getRecordscore}</p>
+                    <p>score{this.state.getRecordowner}</p>
                     <button onClick={this.getRecord}>getRecord</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>getLove</p>
+                    <p>爱情运势记录{this.state.getLove}</p>
+                    <button onClick={this.getLove}>getLove</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>getCareer</p>
+                    <p>事业运势记录{this.state.getCareer}</p>
+                    <button onClick={this.getCareer}>getCareer</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>getMoney</p>
+                    <p>财富运势记录{this.state.getMoney}</p>
+                    <button onClick={this.getMoney}>getMoney</button>
                     <hr></hr>
                 </div>
 

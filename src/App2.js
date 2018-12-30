@@ -1,15 +1,7 @@
 import React, {Component} from 'react';
 import './App.css';
-import './reset.css';
 import * as artifact from './contracts/Predict'
 
-import moment from 'moment'
-import 'antd/dist/antd.css'
-import { Modal, Button, Layout, Input, InputNumber, Switch, Icon, message } from 'antd'
-const {
-    Header, Footer, Sider, Content,
-} = Layout
-const { TextArea } = Input;
 
 class App extends Component {
 
@@ -27,8 +19,7 @@ class App extends Component {
             result_0: null,
             result_1: null,
             result_2: null,
-            getAllpacket: [],
-            currentPacket: {},
+            
         }
     }
 
@@ -265,101 +256,87 @@ class App extends Component {
 
 
 
-
-
     render() {
         return (
             <div className="App">
-                <div className='top'>
-                    <div className='logo'>TRON LUCK</div>
-                    <p className='address'>{this.state.address}</p>
+                <div>
+                    <p>current address</p>
+                    <p>{this.state.address}</p>
+                    <hr></hr>
                 </div>
-                <Layout className='layout' id='gradient'>
-                    <Sider width='260' className='App-sider border-box container'>
-                        {/* <ul className='info-list'>
-                            <li></li>
-                        </ul> */}
-                        <div className='send-box'>
-                            <div className='send-img' onClick={this.showModal}>
-                                <p>发红包</p>
-                            </div>
-                        </div>
-                    </Sider>
-                    <Content className='App-content border-box container'>
-                        <ul className='p-list'>
-                            {this.state.getAllpacket.map((packet) => (
-                                <li key={packet.id}>
-                                    <div className={packet.checked ? 'checked p-img' : 'p-img'}></div>
-                                    <p className='text'>{packet.getPacketstructContent}</p>
-                                    {packet.getPacketstructCrypto == 'true' ? <p className='text tip'>【口令红包】</p> : null}
-                                </li>
-                            ))}
-                        </ul>
-                    </Content>
-                </Layout>
-                <Footer className='App-footer border-box container'>
-                    <p>All rights reserved.</p>
-                    <p>© Copyright 2018  renwuming.com</p>
-                    <p>Powered by chain-team</p>
-                </Footer>
-                <Modal
-                    visible={this.state.sendModal}
-                    onCancel={this.hideSendModal}
-                    footer={null}
-                    className='send-modal'
-                >
-                    {
-                        this.state.sendStep == 0 ? <div>
-                            <p className='send-btn' onClick={this.sendStep1}>普通红包</p>
-                            <p className='send-btn' onClick={this.sendStep2}>口令红包</p>
-                        </div> :
-                            <div className='step2-box'>
-                                <InputNumber
-                                    placeholder='总金额'
-                                    precision={2}
-                                    min={10}
-                                    max={99999}
-                                    value={this.state.send_sumMoney} onChange={this.handleSumMoney}
-                                ></InputNumber>
-                                <InputNumber
-                                    placeholder='红包个数'
-                                    precision={0}
-                                    min={1}
-                                    max={9999}
-                                    value={this.state.send_packetNum} onChange={this.handlePacketNum}
-                                ></InputNumber>
-                                <TextArea
-                                    placeholder='祝福语'
-                                    autosize={{ minRows: 4, maxRows: 4 }}
-                                    value={this.state.send_content} onChange={this.handleContent}
-                                ></TextArea>
-                                {this.state.sendStep == 2 ?
-                                    <Input placeholder='请输入口令'
-                                        value={this.state.send_command} onChange={this.handleSendCommand}
-                                    ></Input> : null}
-                                <div className='switch-box'>
-                                    <Switch checked={this.state.send_packetType} checkedChildren={<Icon type="check" />} unCheckedChildren={<Icon type="close" />} onChange={this.handlePacketType}></Switch><span className='switch-text'>拼手气</span>
-                                </div>
-                                <p className='send-btn' onClick={this.sendReal}>塞钱进红包!</p>
-                            </div>
-                    }
-                </Modal>
-                <Modal
-                    visible={this.state.detailModal}
-                    onCancel={this.hideDetailModal}
-                    footer={null}
-                    className={'detail-modal'}
-                >
-                    {
-                            <div>
-                                <div className='top2'>
-                                    <p className='text'></p>
-                                    <p className='text time'>{this.state.currentPacket.getPacketstructTime}</p>
-                                    <p className='text left'>领取 {this.state.currentPacket.getPacketstructCount}/{this.state.currentPacket.getPacketstructAllcount}, 共<var>{this.state.currentPacket.getPacketstructMoney}</var> TRX</p>
-                                </div>
-                            </div>
-                    }
-                </Modal>
+
+                <div>
+                    <p>checkUser</p>
+                    <p>{this.state.checkUser}</p>
+                    <button onClick={this.checkUser}>checkUser</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>getUser</p>
+                    <p>id:{this.state.getUserkey}</p>
+                    <p>name:{this.state.getUsername}</p>
+                    <p>sex:{this.state.getUsersex}</p>
+                    <p>birthday:{this.state.getUserbirthday}</p>
+                    <p>luckynumber:{this.state.getUserluckynumber}</p>
+                    <p>love:{this.state.getUserlove}</p>
+                    <p>career:{this.state.getUsercareer}</p>
+                    <p>money:{this.state.getUsermoney}</p>
+                    <button onClick={this.getUser}>getUser</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>predict</p>
+                    <p>分数：{this.state.predict}</p>
+                    <button onClick={this.predict}>predict</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>predictFirst</p>
+                    <p>分数：{this.state.predictFirst}</p>
+                    <button onClick={this.predictFirst}>predictFirst</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>donate</p>
+                    <p>捐赠金额：{this.state.donate}</p>
+                    <button onClick={this.donate}>donate</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>help</p>
+                    <p>转运后分数：{this.state.help}</p>
+                    <button onClick={this.help}>help</button>
+                    <hr></hr>
+                </div>
+
+
+                <div>
+                    <p>getLove</p>
+                    <p>爱情运势记录{this.state.getLove}</p>
+                    <button onClick={this.getLove}>getLove</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>getCareer</p>
+                    <p>事业运势记录{this.state.getCareer}</p>
+                    <button onClick={this.getCareer}>getCareer</button>
+                    <hr></hr>
+                </div>
+
+                <div>
+                    <p>getMoney</p>
+                    <p>财富运势记录{this.state.getMoney}</p>
+                    <button onClick={this.getMoney}>getMoney</button>
+                    <hr></hr>
+                </div>
+
+
             </div>
         );
     }

@@ -1,15 +1,19 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import './App.css';
 import './reset.css';
 import * as artifact from './contracts/Predict'
+import moment from 'moment';
+import 'moment/locale/zh-cn';
+import locale from 'antd/lib/date-picker/locale/zh_CN';
 
-import moment from 'moment'
 import 'antd/dist/antd.css'
-import { Modal, Button, Layout, Input, InputNumber, Switch, Icon, message } from 'antd'
+import { Modal, Button, Layout, Input, InputNumber, Switch, Icon, message, Radio, DatePicker } from 'antd'
 const {
     Header, Footer, Sider, Content,
 } = Layout
 const { TextArea } = Input;
+const RadioGroup = Radio.Group;
+
 
 class App extends Component {
 
@@ -29,6 +33,7 @@ class App extends Component {
             result_2: null,
             getAllpacket: [],
             currentPacket: {},
+            infoModal: true,
         }
     }
 
@@ -36,7 +41,7 @@ class App extends Component {
 
         let tronWeb = window.tronWeb;
         console.log('address', tronWeb.defaultAddress.base58)
-        this.setState({address: tronWeb.defaultAddress.base58});
+        this.setState({ address: tronWeb.defaultAddress.base58 });
         let address = tronWeb.address.fromHex(artifact.networks['*'].address);
         console.log(artifact.abi, artifact.networks['*'].address, address)
         this.contract = tronWeb.contract(artifact.abi, address);
@@ -56,8 +61,8 @@ class App extends Component {
     ////用户可以做的事情  1. 爱情，事业，财富   算命
     ////               2. 爱情，事业，财富   转运
     ////               3. 打赏开发者
-    
-    
+
+
     //checkUser检查是否有用户数据（返回true 或者 false）
     //typeid 预测的类型（1 -- 爱情， 2 -- 事业， 3 -- 财运）
     //true --- 有数据 ，调用 predict (只需要传入一个参数，typeid)
@@ -65,7 +70,7 @@ class App extends Component {
     checkUser = async () => {
         let result_0 = await this.contract.checkUser().call()
         console.log(result_0)
-        this.setState({checkUser:JSON.parse(result_0)})
+        this.setState({ checkUser: JSON.parse(result_0) })
     };
 
     //我的记录
@@ -85,14 +90,14 @@ class App extends Component {
     getUser = async () => {
         let result_0 = await this.contract.getUser().call()
         console.log(result_0);
-        this.setState({getUserkey:JSON.parse(result_0[0])})
-        this.setState({getUsername:result_0[1]})
-        this.setState({getUsersex:JSON.parse(result_0[2])})
-        this.setState({getUserbirthday:JSON.parse(result_0[3])})
-        this.setState({getUserluckynumber:JSON.parse(result_0[4])})
-        this.setState({getUserlove:JSON.parse(result_0[5])})
-        this.setState({getUsercareer:JSON.parse(result_0[6])})
-        this.setState({getUsermoney:JSON.parse(result_0[7])})
+        this.setState({ getUserkey: JSON.parse(result_0[0]) })
+        this.setState({ getUsername: result_0[1] })
+        this.setState({ getUsersex: JSON.parse(result_0[2]) })
+        this.setState({ getUserbirthday: JSON.parse(result_0[3]) })
+        this.setState({ getUserluckynumber: JSON.parse(result_0[4]) })
+        this.setState({ getUserlove: JSON.parse(result_0[5]) })
+        this.setState({ getUsercareer: JSON.parse(result_0[6]) })
+        this.setState({ getUsermoney: JSON.parse(result_0[7]) })
     };
 
 
@@ -105,11 +110,11 @@ class App extends Component {
         let contractInstance = await tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
         console.log(contractInstance)
         //监听 predictSuccess 事件
-        contractInstance["predictSuccess"]().watch(function(err, res) {
+        contractInstance["predictSuccess"]().watch(function (err, res) {
             console.log("error " + err);
-            console.log('eventResult:',res);
+            console.log('eventResult:', res);
             console.log("---------------------")
-            console.log('Money:',res["result"]["score"]);//监听结果，为预测的分数
+            console.log('Money:', res["result"]["score"]);//监听结果，为预测的分数
             score = res["result"]["score"];
             //this.setState({predict:res["result"]["score"]})
         });
@@ -119,15 +124,15 @@ class App extends Component {
         let result_0 = await this.contract.predict(typepredict).call()
         console.log(result_0)
         score = JSON.parse(result_0)
-        if(score == 0) {
+        if (score == 0) {
             let result_0 = await this.contract.predictType(typepredict).send({
-                feeLimit:100000000,
-                callValue:0,
-                shouldPollResponse:true
+                feeLimit: 100000000,
+                callValue: 0,
+                shouldPollResponse: true
             })
             console.log(result_0)
         }
-        this.setState({predict:score})
+        this.setState({ predict: score })
     };
 
     //第一次算运势
@@ -137,11 +142,11 @@ class App extends Component {
         console.log("---------------------")
         let contractInstance = await tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
         console.log(contractInstance)
-        contractInstance["predictSuccess"]().watch(function(err, res) {
+        contractInstance["predictSuccess"]().watch(function (err, res) {
             console.log("error " + err);
-            console.log('eventResult:',res);
+            console.log('eventResult:', res);
             console.log("---------------------")
-            console.log('score:',res["result"]["score"]);
+            console.log('score:', res["result"]["score"]);
             score = res["result"]["score"];
         });
         console.log("---------------------")
@@ -152,13 +157,13 @@ class App extends Component {
         let birthday = 19970101
         let luckynumber = 6
         let typepredict = 2 ///1是love，2是career，3是money
-        let result_0 = await this.contract.predictFirst(name, sex, birthday, luckynumber,typepredict).send({
-            feeLimit:100000000,
-            callValue:0,
-            shouldPollResponse:true
+        let result_0 = await this.contract.predictFirst(name, sex, birthday, luckynumber, typepredict).send({
+            feeLimit: 100000000,
+            callValue: 0,
+            shouldPollResponse: true
         })
         console.log(result_0)
-        this.setState({predictFirst:score})
+        this.setState({ predictFirst: score })
     };
 
     //捐赠给开发者
@@ -167,22 +172,22 @@ class App extends Component {
         console.log("---------------------")
         let contractInstance = await tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
         console.log(contractInstance)
-        contractInstance["DonateSuccess"]().watch(function(err, res) {
+        contractInstance["DonateSuccess"]().watch(function (err, res) {
             console.log("error " + err);
-            console.log('eventResult:',res);
+            console.log('eventResult:', res);
             console.log("---------------------")
-            console.log('Money:',res["result"]["money"]);
+            console.log('Money:', res["result"]["money"]);
         });
         console.log("---------------------")
         let tron = 1000000
         let money = 5
         let result_0 = await this.contract.donate(money).send({
-            feeLimit:100000000,
-            callValue:money * tron,
-            shouldPollResponse:true
+            feeLimit: 100000000,
+            callValue: money * tron,
+            shouldPollResponse: true
         })
         console.log(result_0)
-        this.setState({donate:res["result"]["money"]})
+        this.setState({ donate: res["result"]["money"] })
     };
 
     //转运
@@ -192,22 +197,22 @@ class App extends Component {
         console.log("---------------------")
         let contractInstance = await tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
         console.log(contractInstance)
-        contractInstance["predictSuccess"]().watch(function(err, res) {
+        contractInstance["predictSuccess"]().watch(function (err, res) {
             console.log("error " + err);
-            console.log('eventResult:',res);
+            console.log('eventResult:', res);
             console.log("---------------------")
-            console.log('score:',res["result"]["score"]);
+            console.log('score:', res["result"]["score"]);
             score = res["result"]["score"]
         });
         console.log("---------------------")
         let typeid = 1
         let result_0 = await this.contract.help(typeid).send({
-            feeLimit:100000000,
-            callValue:5000000,      //手续费，转运付费，5tron
-            shouldPollResponse:true
+            feeLimit: 100000000,
+            callValue: 5000000,      //手续费，转运付费，5tron
+            shouldPollResponse: true
         })
         console.log(result_0)
-        this.setState({help:score})
+        this.setState({ help: score })
     };
 
     //不做锦鲤榜的话，下面的getLove，getCareer，getMoney就不用了
@@ -220,14 +225,14 @@ class App extends Component {
         console.log("----------------")
         console.log(result_0)
         console.log("----------------")
-        for(let i = 1; i<JSON.parse(result_0); i++) {
+        for (let i = 1; i < JSON.parse(result_0); i++) {
             console.log(i)
             user = console.log(await this.contract.getLove(i).call())
             //返回这预测的用户
             //用用户地址去取他的分数，
             users.push(user)
         }
-        this.setState({getLove:users.join(",")})
+        this.setState({ getLove: users.join(",") })
     }
 
     //事业运势记录，typeid = 2
@@ -238,12 +243,12 @@ class App extends Component {
         console.log("----------------")
         console.log(result_0)
         console.log("----------------")
-        for(let i = 1; i<result_0; i++) {
+        for (let i = 1; i < result_0; i++) {
             console.log(i)
             console.log(await this.contract.getCareer(i).call())
             users.push(user)
         }
-        this.setState({getCareer:users.join(",")})
+        this.setState({ getCareer: users.join(",") })
     }
 
     //财富运势记录，typeid = 3
@@ -255,12 +260,12 @@ class App extends Component {
         console.log(result_0)
         console.log("----------------")
         console.log(result_0)
-        for(let i = 1; i<result_0; i++) {
+        for (let i = 1; i < result_0; i++) {
             console.log(i)
             console.log(await this.contract.getMoney(i).call())
             users.push(user)
         }
-        this.setState({getMoney:users.join(",")})
+        this.setState({ getMoney: users.join(",") })
     }
 
 
@@ -303,46 +308,30 @@ class App extends Component {
                     <p>Powered by chain-team</p>
                 </Footer>
                 <Modal
-                    visible={this.state.sendModal}
-                    onCancel={this.hideSendModal}
+                    visible={this.state.infoModal}
+                    onCancel={this.hideInfoModal}
                     footer={null}
                     className='send-modal'
                 >
-                    {
-                        this.state.sendStep == 0 ? <div>
-                            <p className='send-btn' onClick={this.sendStep1}>普通红包</p>
-                            <p className='send-btn' onClick={this.sendStep2}>口令红包</p>
-                        </div> :
-                            <div className='step2-box'>
-                                <InputNumber
-                                    placeholder='总金额'
-                                    precision={2}
-                                    min={10}
-                                    max={99999}
-                                    value={this.state.send_sumMoney} onChange={this.handleSumMoney}
-                                ></InputNumber>
-                                <InputNumber
-                                    placeholder='红包个数'
-                                    precision={0}
-                                    min={1}
-                                    max={9999}
-                                    value={this.state.send_packetNum} onChange={this.handlePacketNum}
-                                ></InputNumber>
-                                <TextArea
-                                    placeholder='祝福语'
-                                    autosize={{ minRows: 4, maxRows: 4 }}
-                                    value={this.state.send_content} onChange={this.handleContent}
-                                ></TextArea>
-                                {this.state.sendStep == 2 ?
-                                    <Input placeholder='请输入口令'
-                                        value={this.state.send_command} onChange={this.handleSendCommand}
-                                    ></Input> : null}
-                                <div className='switch-box'>
-                                    <Switch checked={this.state.send_packetType} checkedChildren={<Icon type="check" />} unCheckedChildren={<Icon type="close" />} onChange={this.handlePacketType}></Switch><span className='switch-text'>拼手气</span>
-                                </div>
-                                <p className='send-btn' onClick={this.sendReal}>塞钱进红包!</p>
-                            </div>
-                    }
+                    <div className='step2-box'>
+                        <Input placeholder='姓名'
+                            value={this.state.info_name} onChange={this.handleInfoname}
+                        ></Input>
+                        <RadioGroup onChange={this.onChange} value={this.state.info_sex}>
+                            <Radio value={0}>男</Radio>
+                            <Radio value={1}>女</Radio>
+                        </RadioGroup>
+                        <DatePicker
+                            locale={locale}
+                            placeholder='请选择生日'></DatePicker>
+                        <InputNumber
+                            placeholder='幸运数字'
+                            min={1}
+                            max={999}
+                            value={this.state.info_luckynum} onChange={this.handleInfoluckynum}
+                        ></InputNumber>
+                        <p className='send-btn' onClick={this.sendReal}>提交</p>
+                    </div>
                 </Modal>
                 <Modal
                     visible={this.state.detailModal}
@@ -351,13 +340,13 @@ class App extends Component {
                     className={'detail-modal'}
                 >
                     {
-                            <div>
-                                <div className='top2'>
-                                    <p className='text'></p>
-                                    <p className='text time'>{this.state.currentPacket.getPacketstructTime}</p>
-                                    <p className='text left'>领取 {this.state.currentPacket.getPacketstructCount}/{this.state.currentPacket.getPacketstructAllcount}, 共<var>{this.state.currentPacket.getPacketstructMoney}</var> TRX</p>
-                                </div>
+                        <div>
+                            <div className='top2'>
+                                <p className='text'></p>
+                                <p className='text time'>{this.state.currentPacket.getPacketstructTime}</p>
+                                <p className='text left'>领取 {this.state.currentPacket.getPacketstructCount}/{this.state.currentPacket.getPacketstructAllcount}, 共<var>{this.state.currentPacket.getPacketstructMoney}</var> TRX</p>
                             </div>
+                        </div>
                     }
                 </Modal>
             </div>

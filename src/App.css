@@ -1,12 +1,12 @@
 html,
 body {
   padding: 0 !important;
-  background: #fff url(./assets/bk.jpg) 0 0/600px auto!important;
+  background: #fff url(./assets/bk.jpg) 0 0/600px auto !important;
 }
 
 .top {
   height: 200px;
-  background-color: rgba(255,255,255,.7);
+  background-color: rgba(255, 255, 255, .7);
   position: relative;
 }
 
@@ -24,7 +24,6 @@ body {
 
 .layout {
   padding: 30px;
-  padding-top: 60px;
 }
 
 .App {
@@ -106,7 +105,7 @@ body {
 }
 
 .App-content {
-  background-color: rgba(255,255,255,.7) !important;
+  background-color: rgba(255, 255, 255, .7) !important;
   min-height: 400px !important;
 }
 
@@ -160,12 +159,12 @@ body {
   flex-direction: column;
   border: 0 !important;
   box-shadow: none !important;
-  color: #99CC00!important;
+  color: #99CC00 !important;
 }
 
 .App-footer p {
   margin: 0;
-  font-weight: bold!important;
+  font-weight: bold !important;
 }
 
 .border-box {
@@ -175,7 +174,7 @@ body {
 }
 
 .ant-layout-sider {
-  background-color: rgba(255,255,255,.7) !important;
+  background-color: rgba(255, 255, 255, .7) !important;
   /* color: #cd4144 !important; */
 }
 
@@ -191,7 +190,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 500px;
-  background-color: #cd4144 !important;
+  background-color: rgba(33, 66, 99, .8) !important;
   border-radius: 8px;
 }
 
@@ -393,4 +392,13 @@ body {
   color: #222426;
   font-style: italic;
   font-weight: bold;
+}
+
+.ant-calendar-header div {
+  text-align: center;
+}
+
+.ant-radio-wrapper {
+  color: #fff!important;
+  font-size: 18px!important;
 }

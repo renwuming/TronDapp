@@ -33,7 +33,11 @@ class App extends Component {
             result_2: null,
             getAllpacket: [],
             currentPacket: {},
-            infoModal: true,
+            infoModal: false,
+            info_name: '',
+            info_sex: 0,
+            info_luckynum: 0,
+            info_birth: null,
         }
     }
 
@@ -268,6 +272,40 @@ class App extends Component {
         this.setState({ getMoney: users.join(",") })
     }
 
+    hideInfoModal = async () => {
+        this.setState({
+            infoModal: false,
+        })
+    }
+    handleInfoname = async (e) => {
+        let value = e.target.value
+        this.setState({
+            info_name: value,
+        })
+    }
+    handleInfoBirth = async (date) => {
+        this.setState({
+            info_birth: date,
+        })
+        console.log(date)
+    }
+
+    handleInfoSex = async (e) => {
+        let value = e.target.value
+        this.setState({
+            info_sex: value,
+        })
+    }
+    handleInfoluckynum = async (value) => {
+        this.setState({
+            info_luckynum: value,
+        })
+    }
+    showInfo = async () => {
+        this.setState({
+            infoModal: true,
+        })
+    }
 
 
 
@@ -280,15 +318,30 @@ class App extends Component {
                     <p className='address'>{this.state.address}</p>
                 </div>
                 <Layout className='layout' id='gradient'>
-                    <Sider width='260' className='App-sider border-box container'>
-                        {/* <ul className='info-list'>
-                            <li></li>
-                        </ul> */}
-                        <div className='send-box'>
-                            <div className='send-img' onClick={this.showModal}>
-                                <p>发红包</p>
-                            </div>
-                        </div>
+                    <Sider width='360' className='App-sider border-box container'>
+                        <ul className='info-list'>
+                            <li>
+                                <div className='send-box money'>
+                                    <div className='send-img' onClick={this.showInfo}>
+                                    </div>
+                                    <p>财富运势</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div className='send-box shiye'>
+                                    <div className='send-img' onClick={this.showInfo}>
+                                    </div>
+                                    <p>事业运势</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div className='send-box love'>
+                                    <div className='send-img' onClick={this.showInfo}>
+                                    </div>
+                                    <p>爱情运势</p>
+                                </div>
+                            </li>
+                        </ul>
                     </Sider>
                     <Content className='App-content border-box container'>
                         <ul className='p-list'>
@@ -317,16 +370,18 @@ class App extends Component {
                         <Input placeholder='姓名'
                             value={this.state.info_name} onChange={this.handleInfoname}
                         ></Input>
-                        <RadioGroup onChange={this.onChange} value={this.state.info_sex}>
+                        <RadioGroup onChange={this.handleInfoSex} value={this.state.info_sex}>
                             <Radio value={0}>男</Radio>
                             <Radio value={1}>女</Radio>
                         </RadioGroup>
                         <DatePicker
                             locale={locale}
+                            onChange={this.handleInfoBirth}
+                            value={this.state.info_birth}
                             placeholder='请选择生日'></DatePicker>
                         <InputNumber
                             placeholder='幸运数字'
-                            min={1}
+                            min={0}
                             max={999}
                             value={this.state.info_luckynum} onChange={this.handleInfoluckynum}
                         ></InputNumber>

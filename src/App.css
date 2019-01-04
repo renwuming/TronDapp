@@ -2,10 +2,12 @@ html,
 body {
   padding: 0 !important;
   background: #fff url(./assets/bk.jpg) 0 0/600px auto !important;
+  overflow: hidden!important;
 }
 
 .top {
   height: 200px;
+  flex-shrink: 0;
   background-color: rgba(255, 255, 255, .7);
   position: relative;
 }
@@ -56,10 +58,9 @@ body {
 
 .ant-layout-sider-children {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   flex-direction: column;
   align-items: center;
-  padding: 10px 0;
 }
 
 .App-sider var {
@@ -69,39 +70,49 @@ body {
 }
 
 .info-list {
+  display: flex;
+  flex-direction: row;
   width: 100%;
-  padding: 0 16px;
-  padding-top: 20px;
+  margin: 0;
 }
 
 .info-list li {
   width: 100%;
-  border-bottom: 4px solid #c37f42;
   font-size: 22px;
 }
 
-.App-sider .send-img:hover p {
+.App-sider .send-box:hover p {
   color: #cd4144;
 }
 
-.App-sider .send-img:hover {
-  box-shadow: 0 4px 12px 0 rgba(205, 65, 68, .5);
+.App-sider .send-box:hover .send-img {
+  box-shadow: 0 4px 12px 0 rgba(205, 65, 68, .8);
 }
 
 .App-sider .send-img {
-  background: url('assets/send.jpg') center center/cover no-repeat;
-  width: 240px;
-  height: 138px;
-  border-radius: 20px;
+  background: url('assets/1.jpg') center center/cover no-repeat;
+  width: 80px;
+  height: 134px;
+  margin: 0 auto;
+  border-radius: 12px;
   cursor: pointer;
+  border: 2px solid rgba(0,0,0,.4);
+}
+.shiye .send-img {
+  background-image: url(./assets/2.jpg);
+}
+.love .send-img {
+  background-image: url(./assets/3.jpg);
 }
 
-.App-sider .send-img p {
+.send-box p {
+  width: 120px;
   font-size: 24px;
   font-weight: bold;
-  color: #c37f42;
-  margin-left: 8px;
-  margin-top: 2px;
+  color: #CC6699;
+  margin: 0;
+  margin-top: 8px;
+  text-align: center;
 }
 
 .App-content {
@@ -175,7 +186,12 @@ body {
 
 .ant-layout-sider {
   background-color: rgba(255, 255, 255, .7) !important;
-  /* color: #cd4144 !important; */
+  /* background-color: rgba(0,0,0,.9) !important; */
+}
+.border-box2 {
+  border: 4px solid #CC6699;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, .2);
 }
 
 .detail-modal,

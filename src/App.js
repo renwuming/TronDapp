@@ -38,6 +38,12 @@ class App extends Component {
             info_sex: 0,
             info_luckynum: 0,
             info_birth: null,
+            checkUser:false,
+            donate:5,
+            donateModal:false,
+            help:1,
+            helpModal:false,
+            typeid:1,
         }
     }
 
@@ -50,6 +56,10 @@ class App extends Component {
         console.log(artifact.abi, artifact.networks['*'].address, address)
         this.contract = tronWeb.contract(artifact.abi, address);
         console.log(this.contract);
+        this.checkUser();
+        if(this.checkUser()){
+            this.getUser();
+        }
     }
 
 
@@ -73,8 +83,11 @@ class App extends Component {
     //false -- 没有数据，调用 predictFirst （除了typeid， 还有个人信息）
     checkUser = async () => {
         let result_0 = await this.contract.checkUser().call()
-        console.log(result_0)
-        this.setState({ checkUser: JSON.parse(result_0) })
+        console.log(this.state.checkUser)
+        this.state.checkUser = JSON.parse(result_0)
+        console.log("this.state.checkUser")
+        console.log(this.state.checkUser)
+        //this.setState({checkUser: JSON.parse(result_0) })
     };
 
     //我的记录
@@ -94,7 +107,7 @@ class App extends Component {
     getUser = async () => {
         let result_0 = await this.contract.getUser().call()
         console.log(result_0);
-        this.setState({ getUserkey: JSON.parse(result_0[0]) })
+        //this.setState({ getUserkey: JSON.parse(result_0[0]) })
         this.setState({ getUsername: result_0[1] })
         this.setState({ getUsersex: JSON.parse(result_0[2]) })
         this.setState({ getUserbirthday: JSON.parse(result_0[3]) })
@@ -106,7 +119,7 @@ class App extends Component {
 
 
     //运势
-    predict = async () => {
+    predict = async (typeid) => {
         //监听
         //41dbeba2b4d7e5ce37f84e6b949681316c8259a159 为合约地址，部署新合约后，需替换
         let score;
@@ -122,9 +135,10 @@ class App extends Component {
             score = res["result"]["score"];
             //this.setState({predict:res["result"]["score"]})
         });
-        console.log("---------------------")
+        console.log("typeid---------------------")
         //调用 合约中得predict
-        let typepredict = 1 ///1是love，2是career，3是money
+        let typepredict = typeid ///1是love，2是career，3是money
+        console.log(typepredict)
         let result_0 = await this.contract.predict(typepredict).call()
         console.log(result_0)
         score = JSON.parse(result_0)
@@ -136,11 +150,21 @@ class App extends Component {
             })
             console.log(result_0)
         }
-        this.setState({ predict: score })
+        this.getUser()
+        //this.setState({ predict: score })
     };
 
     //第一次算运势
     predictFirst = async () => {
+        console.log("predictFirst")
+        console.log(this.state.info_name, this.state.info_sex, this.state.info_birth, this.state.info_luckynum, 1)
+        let name = this.state.info_name;
+        let sex = this.state.info_sex;
+        //let birthday = 19990101;
+        let birthday = +this.state.info_birth;
+        let luckynumber = this.state.info_luckynum;
+        let typepredict = this.state.typeid;
+        console.log(name,sex,birthday,luckynumber,typepredict)
         //监听
         let score;
         console.log("---------------------")
@@ -156,18 +180,19 @@ class App extends Component {
         console.log("---------------------")
         //调用 合约中得predictFirst
         //string _name, uint256 _sex, uint256 _birthday, uint256 _luckynumber, uint256 _type
-        let name = "hahaha"
-        let sex = 1
-        let birthday = 19970101
-        let luckynumber = 6
-        let typepredict = 2 ///1是love，2是career，3是money
+        //let name = "hahaha"
+        //let sex = 1
+        //let birthday = 19970101
+        //let luckynumber = 6
+        //let typepredict = 2 ///1是love，2是career，3是money
         let result_0 = await this.contract.predictFirst(name, sex, birthday, luckynumber, typepredict).send({
             feeLimit: 100000000,
             callValue: 0,
             shouldPollResponse: true
         })
         console.log(result_0)
-        this.setState({ predictFirst: score })
+        this.getUser()
+        //this.setState({ predictFirst: score })
     };
 
     //捐赠给开发者
@@ -184,14 +209,14 @@ class App extends Component {
         });
         console.log("---------------------")
         let tron = 1000000
-        let money = 5
+        let money = this.state.donate
         let result_0 = await this.contract.donate(money).send({
             feeLimit: 100000000,
             callValue: money * tron,
             shouldPollResponse: true
         })
         console.log(result_0)
-        this.setState({ donate: res["result"]["money"] })
+        //this.setState({ donate: res["result"]["money"] })
     };
 
     //转运
@@ -209,14 +234,15 @@ class App extends Component {
             score = res["result"]["score"]
         });
         console.log("---------------------")
-        let typeid = 1
+        let typeid = this.state.help
         let result_0 = await this.contract.help(typeid).send({
             feeLimit: 100000000,
             callValue: 5000000,      //手续费，转运付费，5tron
             shouldPollResponse: true
         })
         console.log(result_0)
-        this.setState({ help: score })
+        //this.setState({ help: score })
+        this.getUser();
     };
 
     //不做锦鲤榜的话，下面的getLove，getCareer，getMoney就不用了
@@ -277,6 +303,16 @@ class App extends Component {
             infoModal: false,
         })
     }
+    hideDonateModal = async () => {
+        this.setState({
+            donateModal: false,
+        })
+    }
+    hideHelpModal = async () => {
+        this.setState({
+            helpModal: false,
+        })
+    }
     handleInfoname = async (e) => {
         let value = e.target.value
         this.setState({
@@ -296,16 +332,40 @@ class App extends Component {
             info_sex: value,
         })
     }
+    handleHelp = async (e) => {
+        let value = e.target.value
+        this.setState({
+            help: value,
+        })
+    }
     handleInfoluckynum = async (value) => {
         this.setState({
             info_luckynum: value,
         })
     }
-    showInfo = async () => {
+    handleDonate = async (value) => {
         this.setState({
-            infoModal: true,
+            donate: value,
         })
     }
+
+    showInfo = async (value) => {
+        this.setState({
+            infoModal: true,
+            typeid:value,
+        })
+    }
+    showDonate = async () => {
+        this.setState({
+            donateModal: true,
+        })
+    }
+    showHelp = async () => {
+        this.setState({
+            helpModal: true,
+        })
+    }
+
 
 
 
@@ -320,31 +380,78 @@ class App extends Component {
                 <Layout className='layout' id='gradient'>
                     <Sider width='360' className='App-sider border-box container'>
                         <p className='title'>测运势</p>
+                        {!this.state.checkUser?
                         <ul className='info-list'>
                             <li>
                                 <div className='send-box money'>
-                                    <div className='send-img' onClick={this.showInfo}>
+                                    <div className='send-img'  onClick={this.showInfo.bind(this,3)}>
                                     </div>
                                     <p>财富运势</p>
                                 </div>
                             </li>
                             <li>
                                 <div className='send-box shiye'>
-                                    <div className='send-img' onClick={this.showInfo}>
+                                    <div className='send-img' onClick={this.showInfo.bind(this,2)}>
                                     </div>
                                     <p>事业运势</p>
                                 </div>
                             </li>
                             <li>
                                 <div className='send-box love'>
-                                    <div className='send-img' onClick={this.showInfo}>
+                                    <div className='send-img' onClick={this.showInfo.bind(this,1)}>
                                     </div>
                                     <p>爱情运势</p>
                                 </div>
                             </li>
                         </ul>
+                        :
+                        <ul className='info-list'>
+                            <li>
+                                <div className='send-box money'>
+                                    <div className='send-img' onClick={this.predict.bind(this,3)}>
+                                    </div>
+                                    <p>财富运势</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div className='send-box shiye'>
+                                    <div className='send-img'  onClick={this.predict.bind(this,2)}>
+                                    </div>
+                                    <p>事业运势</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div className='send-box love'>
+                                    <div className='send-img' onClick={this.predict.bind(this,1)}>
+                                    </div>
+                                    <p>爱情运势</p>
+                                </div>
+                            </li>
+                        </ul>
+                        }
+                    <div className='send-box donate'>
+                        <div className='send-img' onClick={this.showDonate}>
+                        </div>
+                        <p>捐赠</p>
+                    </div>
+                    <div className='send-box donate'>
+                        <div className='send-img' onClick={this.showHelp}>
+                        </div>
+                        <p>转运</p>
+                    </div>
+                        
                     </Sider>
                     <Content className='App-content border-box container'>
+                    <div>
+                        <p>name:{this.state.getUsername}</p>
+                        <p>sex:{this.state.getUsersex}</p>
+                        <p>birthday:{this.state.getUserbirthday}</p>
+                        <p>luckynumber:{this.state.getUserluckynumber}</p>
+                        <p>love:{this.state.getUserlove}</p>
+                        <p>career:{this.state.getUsercareer}</p>
+                        <p>money:{this.state.getUsermoney}</p>
+                        <hr></hr>
+                    </div>
                         <ul className='p-list'>
                             {this.state.getAllpacket.map((packet) => (
                                 <li key={packet.id}>
@@ -361,6 +468,39 @@ class App extends Component {
                     <p>© Copyright 2018  renwuming.com</p>
                     <p>Powered by chain-team</p>
                 </Footer>
+        
+                <Modal
+                    visible={this.state.helpModal}
+                    onCancel={this.hideHelpModal}
+                    footer={null}
+                    className='help-modal'
+                >
+                <div className='step2-box'>
+                    <RadioGroup onChange={this.handleHelp} value={this.state.help}>
+                            <Radio value={1}>爱情</Radio>
+                            <Radio value={2}>事业</Radio>
+                            <Radio value={3}>财富</Radio>
+                        </RadioGroup>
+                        <p className='send-btn' onClick={this.help}>提交</p>
+                    </div>
+                </Modal>
+
+                <Modal
+                    visible={this.state.donateModal}
+                    onCancel={this.hideDonateModal}
+                    footer={null}
+                    className='donate-modal'
+                >
+                <div className='step2-box'>
+                        <InputNumber
+                            placeholder='幸运数字'
+                            min={0}
+                            max={999}
+                            value={this.state.donate} onChange={this.handleDonate}
+                        ></InputNumber>
+                        <p className='send-btn' onClick={this.donate}>提交</p>
+                    </div>
+                </Modal>
                 <Modal
                     visible={this.state.infoModal}
                     onCancel={this.hideInfoModal}
@@ -372,8 +512,8 @@ class App extends Component {
                             value={this.state.info_name} onChange={this.handleInfoname}
                         ></Input>
                         <RadioGroup onChange={this.handleInfoSex} value={this.state.info_sex}>
-                            <Radio value={0}>男</Radio>
-                            <Radio value={1}>女</Radio>
+                            <Radio value={1}>男</Radio>
+                            <Radio value={0}>女</Radio>
                         </RadioGroup>
                         <DatePicker
                             locale={locale}
@@ -386,7 +526,7 @@ class App extends Component {
                             max={999}
                             value={this.state.info_luckynum} onChange={this.handleInfoluckynum}
                         ></InputNumber>
-                        <p className='send-btn' onClick={this.sendReal}>提交</p>
+                        <p className='send-btn' onClick={this.predictFirst}>提交</p>
                     </div>
                 </Modal>
                 <Modal

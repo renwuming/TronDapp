@@ -124,7 +124,7 @@ class App extends Component {
         //41dbeba2b4d7e5ce37f84e6b949681316c8259a159 为合约地址，部署新合约后，需替换
         let score;
         console.log("---------------------")
-        let contractInstance = await tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
+        let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
         console.log(contractInstance)
         //监听 predictSuccess 事件
         contractInstance["predictSuccess"]().watch(function (err, res) {
@@ -168,7 +168,7 @@ class App extends Component {
         //监听
         let score;
         console.log("---------------------")
-        let contractInstance = await tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
+        let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
         console.log(contractInstance)
         contractInstance["predictSuccess"]().watch(function (err, res) {
             console.log("error " + err);
@@ -199,7 +199,7 @@ class App extends Component {
     donate = async () => {
         //监听
         console.log("---------------------")
-        let contractInstance = await tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
+        let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
         console.log(contractInstance)
         contractInstance["DonateSuccess"]().watch(function (err, res) {
             console.log("error " + err);
@@ -224,7 +224,7 @@ class App extends Component {
         //监听
         let score;
         console.log("---------------------")
-        let contractInstance = await tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
+        let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
         console.log(contractInstance)
         contractInstance["predictSuccess"]().watch(function (err, res) {
             console.log("error " + err);

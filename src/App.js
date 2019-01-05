@@ -319,6 +319,7 @@ class App extends Component {
                 </div>
                 <Layout className='layout' id='gradient'>
                     <Sider width='360' className='App-sider border-box container'>
+                        <p className='title'>测运势</p>
                         <ul className='info-list'>
                             <li>
                                 <div className='send-box money'>

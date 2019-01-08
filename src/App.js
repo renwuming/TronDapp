@@ -5,15 +5,25 @@ import * as artifact from './contracts/Predict'
 import moment from 'moment';
 import 'moment/locale/zh-cn';
 import locale from 'antd/lib/date-picker/locale/zh_CN';
+import PieReact from './echarts'
 
 import 'antd/dist/antd.css'
-import { Modal, Button, Layout, Input, InputNumber, Switch, Icon, message, Radio, DatePicker } from 'antd'
+import { Modal, Button, Layout, Input, InputNumber, Switch, Icon, message, Radio, DatePicker, Popconfirm } from 'antd'
 const {
     Header, Footer, Sider, Content,
 } = Layout
 const { TextArea } = Input;
 const RadioGroup = Radio.Group;
 
+
+const setItem = function (name, value) {
+    if (!window.localStorage || !name || !value) return false;
+    window.localStorage.setItem(name, JSON.stringify(value));
+}
+const getItem = function (name) {
+    if (!window.localStorage || !name) return false;
+    return JSON.parse(window.localStorage.getItem(name));
+}
 
 class App extends Component {
 
@@ -33,17 +43,20 @@ class App extends Component {
             result_2: null,
             getAllpacket: [],
             currentPacket: {},
-            infoModal: false,
+            infoModal: true,
             info_name: '',
-            info_sex: 0,
+            info_sex: 1,
             info_luckynum: 0,
             info_birth: null,
-            checkUser:false,
-            donate:5,
-            donateModal:false,
-            help:1,
-            helpModal:false,
-            typeid:1,
+            checkUser: false,
+            donate: 5,
+            donateModal: false,
+            help: 1,
+            helpModal: false,
+            typeid: 1,
+            getUserlove: -1,
+            getUsercareer: -1,
+            getUsermoney: -1,
         }
     }
 
@@ -56,10 +69,34 @@ class App extends Component {
         console.log(artifact.abi, artifact.networks['*'].address, address)
         this.contract = tronWeb.contract(artifact.abi, address);
         console.log(this.contract);
-        this.checkUser();
-        if(this.checkUser()){
-            this.getUser();
-        }
+
+        let userStatus = await this.checkUser()
+        this.setState({
+            checkUser: userStatus,
+        })
+        this.getUser();
+
+
+        // let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
+        // //监听 predictSuccess 事件
+        // contractInstance["predictSuccess"]().watch(function (err, res) {
+        //     console.log(res,'resresresresresresresres');
+        //     //监听结果，为预测的分数
+        //     score = res["result"]["score"];
+        //     if(this.state.predictType == 1) {
+        //         this.setState({
+        //             getUserlove: 11,
+        //         })
+        //     } else if(this.state.predictType == 2) {
+        //         this.setState({
+        //             getUsercareer: 22,
+        //         })
+        //     } else if(this.state.predictType == 3) {
+        //         this.setState({
+        //             getUsermoney: 33,
+        //         })
+        //     }
+        // });
     }
 
 
@@ -82,12 +119,10 @@ class App extends Component {
     //true --- 有数据 ，调用 predict (只需要传入一个参数，typeid)
     //false -- 没有数据，调用 predictFirst （除了typeid， 还有个人信息）
     checkUser = async () => {
+        let userInfo = getItem('userInfo')
+        if (userInfo && userInfo.name) return true
         let result_0 = await this.contract.checkUser().call()
-        console.log(this.state.checkUser)
-        this.state.checkUser = JSON.parse(result_0)
-        console.log("this.state.checkUser")
-        console.log(this.state.checkUser)
-        //this.setState({checkUser: JSON.parse(result_0) })
+        return JSON.parse(result_0)
     };
 
     //我的记录
@@ -106,8 +141,6 @@ class App extends Component {
     */
     getUser = async () => {
         let result_0 = await this.contract.getUser().call()
-        console.log(result_0);
-        //this.setState({ getUserkey: JSON.parse(result_0[0]) })
         this.setState({ getUsername: result_0[1] })
         this.setState({ getUsersex: JSON.parse(result_0[2]) })
         this.setState({ getUserbirthday: JSON.parse(result_0[3]) })
@@ -115,33 +148,45 @@ class App extends Component {
         this.setState({ getUserlove: JSON.parse(result_0[5]) })
         this.setState({ getUsercareer: JSON.parse(result_0[6]) })
         this.setState({ getUsermoney: JSON.parse(result_0[7]) })
+
+        setItem('userInfo', {
+            name: result_0[1],
+            sex: JSON.parse(result_0[2]),
+            birthday: JSON.parse(result_0[3]),
+            luckynumber: JSON.parse(result_0[4]),
+        })
     };
 
 
     //运势
     predict = async (typeid) => {
+        this.setState({
+            predictType: typeid,
+        })
         //监听
         //41dbeba2b4d7e5ce37f84e6b949681316c8259a159 为合约地址，部署新合约后，需替换
         let score;
-        console.log("---------------------")
         let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
-        console.log(contractInstance)
-        //监听 predictSuccess 事件
-        contractInstance["predictSuccess"]().watch(function (err, res) {
-            console.log("error " + err);
-            console.log('eventResult:', res);
-            console.log("---------------------")
-            console.log('Money:', res["result"]["score"]);//监听结果，为预测的分数
-            score = res["result"]["score"];
-            //this.setState({predict:res["result"]["score"]})
-        });
-        console.log("typeid---------------------")
         //调用 合约中得predict
         let typepredict = typeid ///1是love，2是career，3是money
-        console.log(typepredict)
         let result_0 = await this.contract.predict(typepredict).call()
-        console.log(result_0)
-        score = JSON.parse(result_0)
+        score = result_0.toNumber()
+
+        console.log("---------------------")
+        console.log(typeid, score)
+        if (typeid == 1) {
+            this.setState({
+                getUserlove: score,
+            })
+        } else if (typeid == 2) {
+            this.setState({
+                getUsercareer: score,
+            })
+        } else if (typeid == 3) {
+            this.setState({
+                getUsermoney: score,
+            })
+        }
         if (score == 0) {
             let result_0 = await this.contract.predictType(typepredict).send({
                 feeLimit: 100000000,
@@ -150,34 +195,41 @@ class App extends Component {
             })
             console.log(result_0)
         }
-        this.getUser()
+        // this.getUser()
         //this.setState({ predict: score })
     };
 
     //第一次算运势
     predictFirst = async () => {
         console.log("predictFirst")
-        console.log(this.state.info_name, this.state.info_sex, this.state.info_birth, this.state.info_luckynum, 1)
+        if (!this.state.info_name || !this.state.info_birth || !(this.state.info_luckynum || this.state.info_luckynum == 0)) {
+            message.error('请填写完整!');
+            return
+        }
         let name = this.state.info_name;
         let sex = this.state.info_sex;
-        //let birthday = 19990101;
         let birthday = +this.state.info_birth;
         let luckynumber = this.state.info_luckynum;
         let typepredict = this.state.typeid;
-        console.log(name,sex,birthday,luckynumber,typepredict)
+        console.log(name, sex, birthday, luckynumber)
+        setItem('userInfo', {
+            name,
+            sex,
+            birthday,
+            luckynumber,
+        })
         //监听
-        let score;
-        console.log("---------------------")
-        let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
-        console.log(contractInstance)
-        contractInstance["predictSuccess"]().watch(function (err, res) {
-            console.log("error " + err);
-            console.log('eventResult:', res);
-            console.log("---------------------")
-            console.log('score:', res["result"]["score"]);
-            score = res["result"]["score"];
-        });
-        console.log("---------------------")
+        // let score;
+        // console.log("---------------------")
+        // let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
+        // console.log(contractInstance)
+        // contractInstance["predictSuccess"]().watch(function (err, res) {
+        //     console.log("error " + err);
+        //     console.log('eventResult:', res);
+        //     console.log("---------------------")
+        //     console.log('score:', res["result"]["score"]);
+        //     score = res["result"]["score"];
+        // });
         //调用 合约中得predictFirst
         //string _name, uint256 _sex, uint256 _birthday, uint256 _luckynumber, uint256 _type
         //let name = "hahaha"
@@ -185,12 +237,18 @@ class App extends Component {
         //let birthday = 19970101
         //let luckynumber = 6
         //let typepredict = 2 ///1是love，2是career，3是money
-        let result_0 = await this.contract.predictFirst(name, sex, birthday, luckynumber, typepredict).send({
-            feeLimit: 100000000,
-            callValue: 0,
-            shouldPollResponse: true
-        })
-        console.log(result_0)
+        try {
+
+            let result_0 = await this.contract.predictFirst(name, sex, birthday, luckynumber, typepredict).send({
+                feeLimit: 100000000,
+                callValue: 0,
+                shouldPollResponse: true
+            })
+            console.log(result_0, '<<<<<<<<')
+        } catch(e) {
+            console.log(e.toString())
+        }
+        this.hideInfoModal()
         this.getUser()
         //this.setState({ predictFirst: score })
     };
@@ -240,8 +298,7 @@ class App extends Component {
             callValue: 5000000,      //手续费，转运付费，5tron
             shouldPollResponse: true
         })
-        console.log(result_0)
-        //this.setState({ help: score })
+        this.hideHelpModal()
         this.getUser();
     };
 
@@ -352,7 +409,7 @@ class App extends Component {
     showInfo = async (value) => {
         this.setState({
             infoModal: true,
-            typeid:value,
+            typeid: value,
         })
     }
     showDonate = async () => {
@@ -366,7 +423,8 @@ class App extends Component {
         })
     }
 
-
+    predictCancel = async () => {
+    }
 
 
 
@@ -380,87 +438,78 @@ class App extends Component {
                 <Layout className='layout' id='gradient'>
                     <Sider width='360' className='App-sider border-box container'>
                         <p className='title'>测运势</p>
-                        {!this.state.checkUser?
-                        <ul className='info-list'>
-                            <li>
-                                <div className='send-box money'>
-                                    <div className='send-img'  onClick={this.showInfo.bind(this,3)}>
+                        {!this.state.checkUser ?
+                            <ul className='info-list'>
+                                <li>
+                                    <div className='send-box money'>
+                                        <div className='send-img' onClick={this.showInfo.bind(this, 3)}>
+                                        </div>
+                                        <p>财富运势</p>
                                     </div>
-                                    <p>财富运势</p>
-                                </div>
-                            </li>
-                            <li>
-                                <div className='send-box shiye'>
-                                    <div className='send-img' onClick={this.showInfo.bind(this,2)}>
+                                </li>
+                                <li>
+                                    <div className='send-box shiye'>
+                                        <div className='send-img' onClick={this.showInfo.bind(this, 2)}>
+                                        </div>
+                                        <p>事业运势</p>
                                     </div>
-                                    <p>事业运势</p>
-                                </div>
-                            </li>
-                            <li>
-                                <div className='send-box love'>
-                                    <div className='send-img' onClick={this.showInfo.bind(this,1)}>
+                                </li>
+                                <li>
+                                    <div className='send-box love'>
+                                        <div className='send-img' onClick={this.showInfo.bind(this, 1)}>
+                                        </div>
+                                        <p>爱情运势</p>
                                     </div>
-                                    <p>爱情运势</p>
-                                </div>
-                            </li>
-                        </ul>
-                        :
-                        <ul className='info-list'>
-                            <li>
-                                <div className='send-box money'>
-                                    <div className='send-img' onClick={this.predict.bind(this,3)}>
+                                </li>
+                            </ul>
+                            :
+                            <ul className='info-list'>
+                                <li>
+                                    <div className='send-box money'>
+                                        <div className='send-img' onClick={this.predict.bind(this, 3)}>
+                                        </div>
+                                        <p>财富运势</p>
                                     </div>
-                                    <p>财富运势</p>
-                                </div>
-                            </li>
-                            <li>
-                                <div className='send-box shiye'>
-                                    <div className='send-img'  onClick={this.predict.bind(this,2)}>
+                                </li>
+                                <li>
+                                    <div className='send-box shiye'>
+                                        <div className='send-img' onClick={this.predict.bind(this, 2)}>
+                                        </div>
+                                        <p>事业运势</p>
                                     </div>
-                                    <p>事业运势</p>
-                                </div>
-                            </li>
-                            <li>
-                                <div className='send-box love'>
-                                    <div className='send-img' onClick={this.predict.bind(this,1)}>
+                                </li>
+                                <li>
+                                    <div className='send-box love'>
+                                        <div className='send-img' onClick={this.predict.bind(this, 1)}>
+                                        </div>
+                                        <p>爱情运势</p>
                                     </div>
-                                    <p>爱情运势</p>
-                                </div>
-                            </li>
-                        </ul>
+                                </li>
+                            </ul>
                         }
-                    <div className='send-box donate'>
-                        <div className='send-img' onClick={this.showDonate}>
+                        <div className='bottom-btn'>
+                            <p onClick={this.showHelp}>转运</p>
+                            <p onClick={this.showDonate}>捐赠</p>
                         </div>
-                        <p>捐赠</p>
-                    </div>
-                    <div className='send-box donate'>
-                        <div className='send-img' onClick={this.showHelp}>
-                        </div>
-                        <p>转运</p>
-                    </div>
-                        
+
                     </Sider>
                     <Content className='App-content border-box container'>
-                    <div>
-                        <p>name:{this.state.getUsername}</p>
-                        <p>sex:{this.state.getUsersex}</p>
-                        <p>birthday:{this.state.getUserbirthday}</p>
-                        <p>luckynumber:{this.state.getUserluckynumber}</p>
-                        <p>love:{this.state.getUserlove}</p>
-                        <p>career:{this.state.getUsercareer}</p>
-                        <p>money:{this.state.getUsermoney}</p>
-                        <hr></hr>
-                    </div>
-                        <ul className='p-list'>
-                            {this.state.getAllpacket.map((packet) => (
-                                <li key={packet.id}>
-                                    <div className={packet.checked ? 'checked p-img' : 'p-img'}></div>
-                                    <p className='text'>{packet.getPacketstructContent}</p>
-                                    {packet.getPacketstructCrypto == 'true' ? <p className='text tip'>【口令红包】</p> : null}
-                                </li>
-                            ))}
-                        </ul>
+                        {/* <div>
+                            <p>name:{this.state.getUsername}</p>
+                            <p>sex:{this.state.getUsersex}</p>
+                            <p>birthday:{this.state.getUserbirthday}</p>
+                            <p>luckynumber:{this.state.getUserluckynumber}</p>
+                            <p>love:{this.state.getUserlove}</p>
+                            <p>career:{this.state.getUsercareer}</p>
+                            <p>money:{this.state.getUsermoney}</p>
+                            <hr></hr>
+                        </div> */}
+                        <PieReact data={this.state}></PieReact>
+                        {/* <PieReact data={{
+                            getUserlove: -1,
+                            getUsercareer: -1,
+                            getUsermoney: -1,
+                        }}></PieReact> */}
                     </Content>
                 </Layout>
                 <Footer className='App-footer border-box container'>
@@ -468,15 +517,15 @@ class App extends Component {
                     <p>© Copyright 2018  renwuming.com</p>
                     <p>Powered by chain-team</p>
                 </Footer>
-        
+
                 <Modal
                     visible={this.state.helpModal}
                     onCancel={this.hideHelpModal}
                     footer={null}
-                    className='help-modal'
+                    className='send-modal help-modal'
                 >
-                <div className='step2-box'>
-                    <RadioGroup onChange={this.handleHelp} value={this.state.help}>
+                    <div className='step2-box'>
+                        <RadioGroup onChange={this.handleHelp} value={this.state.help}>
                             <Radio value={1}>爱情</Radio>
                             <Radio value={2}>事业</Radio>
                             <Radio value={3}>财富</Radio>
@@ -489,13 +538,13 @@ class App extends Component {
                     visible={this.state.donateModal}
                     onCancel={this.hideDonateModal}
                     footer={null}
-                    className='donate-modal'
+                    className='send-modal donate-modal'
                 >
-                <div className='step2-box'>
+                    <div className='step2-box'>
                         <InputNumber
-                            placeholder='幸运数字'
-                            min={0}
-                            max={999}
+                            placeholder='捐赠数额'
+                            min={10}
+                            max={9999}
                             value={this.state.donate} onChange={this.handleDonate}
                         ></InputNumber>
                         <p className='send-btn' onClick={this.donate}>提交</p>
@@ -526,24 +575,10 @@ class App extends Component {
                             max={999}
                             value={this.state.info_luckynum} onChange={this.handleInfoluckynum}
                         ></InputNumber>
-                        <p className='send-btn' onClick={this.predictFirst}>提交</p>
+                        <Popconfirm title="提交个人信息后将不可更改，确定提交？" onConfirm={this.predictFirst} onCancel={this.predictCancel} okText="确定" cancelText="取消">
+                            <p className='send-btn'>提交</p>
+                        </Popconfirm>
                     </div>
-                </Modal>
-                <Modal
-                    visible={this.state.detailModal}
-                    onCancel={this.hideDetailModal}
-                    footer={null}
-                    className={'detail-modal'}
-                >
-                    {
-                        <div>
-                            <div className='top2'>
-                                <p className='text'></p>
-                                <p className='text time'>{this.state.currentPacket.getPacketstructTime}</p>
-                                <p className='text left'>领取 {this.state.currentPacket.getPacketstructCount}/{this.state.currentPacket.getPacketstructAllcount}, 共<var>{this.state.currentPacket.getPacketstructMoney}</var> TRX</p>
-                            </div>
-                        </div>
-                    }
                 </Modal>
             </div>
         );

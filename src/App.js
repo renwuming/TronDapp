@@ -43,7 +43,7 @@ class App extends Component {
             result_2: null,
             getAllpacket: [],
             currentPacket: {},
-            infoModal: true,
+            infoModal: false,
             info_name: '',
             info_sex: 1,
             info_luckynum: 0,
@@ -166,7 +166,7 @@ class App extends Component {
         //监听
         //41dbeba2b4d7e5ce37f84e6b949681316c8259a159 为合约地址，部署新合约后，需替换
         let score;
-        let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
+        let contractInstance = await window.tronWeb.contract().at("4194c80d3a1f389c1e9f68dbebdb433335ead427ff");
         //调用 合约中得predict
         let typepredict = typeid ///1是love，2是career，3是money
         let result_0 = await this.contract.predict(typepredict).call()
@@ -195,8 +195,7 @@ class App extends Component {
             })
             console.log(result_0)
         }
-        // this.getUser()
-        //this.setState({ predict: score })
+        this.getUser();
     };
 
     //第一次算运势
@@ -257,7 +256,7 @@ class App extends Component {
     donate = async () => {
         //监听
         console.log("---------------------")
-        let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
+        let contractInstance = await window.tronWeb.contract().at("4194c80d3a1f389c1e9f68dbebdb433335ead427ff");
         console.log(contractInstance)
         contractInstance["DonateSuccess"]().watch(function (err, res) {
             console.log("error " + err);
@@ -273,7 +272,6 @@ class App extends Component {
             callValue: money * tron,
             shouldPollResponse: true
         })
-        console.log(result_0)
         //this.setState({ donate: res["result"]["money"] })
     };
 
@@ -282,7 +280,7 @@ class App extends Component {
         //监听
         let score;
         console.log("---------------------")
-        let contractInstance = await window.tronWeb.contract().at("412cbec6c38a6fb76a315235c9b4989396d65de36e");
+        let contractInstance = await window.tronWeb.contract().at("4194c80d3a1f389c1e9f68dbebdb433335ead427ff");
         console.log(contractInstance)
         contractInstance["predictSuccess"]().watch(function (err, res) {
             console.log("error " + err);

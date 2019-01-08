@@ -228,7 +228,7 @@ function handleConfig(data) {
           data = data.children || data[0] && data[0].children
         }
         let res = data.detail || data[0] && data[0].detail
-        const L = Math.floor((res.length - 1) / 30)
+        const L = Math.ceil((res.length - 1) / 30)
         let R = ''
         for (let i = 0; i < L; i++) {
           R += res.substr(i * 30, 30) + '<br/>'
